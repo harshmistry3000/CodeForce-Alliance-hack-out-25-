@@ -1,116 +1,191 @@
-import Link from "next/link"
-import { GlassCard } from "@/components/glass-card"
-import { Metrics } from "@/components/metrics"
-import { MOCK_SCHEMES, MOCK_PAYMENTS } from "@/lib/mock-data"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { DashboardShell } from "@/components/layouts/dashboard-shell"
+import { FundUtilizationBar, UtilizationPie } from "@/components/charts/fund-utilization"
+import { schemes, transactions } from "@/lib/mock-data"
+import { Button } from "@/components/ui/button"
+import { BarChart3, Globe, Leaf, ShieldCheck } from "lucide-react"
 
-function getPublicStatsFromMocks() {
-  const schemes = MOCK_SCHEMES
-  const payments = MOCK_PAYMENTS
-  const total = schemes.reduce((acc: number, s: any) => acc + (s.fundAllocation?.totalAmount || 0), 0)
-  const disbursed = schemes.reduce((acc: number, s: any) => acc + (s.fundAllocation?.disbursedAmount || 0), 0)
-  return {
-    metrics: [
-      { label: "Active Schemes", value: schemes.filter((s: any) => s.status === "OPEN").length },
-      { label: "Total Funds", value: "₹" + total.toLocaleString() },
-      { label: "Disbursed", value: "₹" + disbursed.toLocaleString() },
-      { label: "Payments", value: payments.length, sub: "All-time transactions" },
-    ],
-    schemes,
-    payments,
-  }
-}
-
-export default async function HomePage() {
-  const { metrics, schemes, payments } = getPublicStatsFromMocks()
+export default function TransparencyHome() {
+  const totalAllocated = schemes.reduce((s, x) => s + x.allocated, 0)
+  const totalUsed = schemes.reduce((s, x) => s + x.used, 0)
 
   return (
-    <main className="relative pb-24 md:pb-8">
-      <header className="sticky top-0 z-30 backdrop-blur-md border-b border-white/20 bg-white/70 dark:bg-slate-900/60">
-        <div className="mx-auto max-w-6xl px-4 py-3 md:py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-xl bg-primary" aria-hidden="true" />
-            <p className="font-semibold text-foreground text-pretty">Green H2 Subsidy Portal</p>
-          </div>
-          <nav className="hidden md:flex items-center gap-3">
-            <Link className="text-foreground/80 hover:underline" href="/startup">
-              Startup
-            </Link>
-            <Link className="text-foreground/80 hover:underline" href="/auditor">
-              Auditor
-            </Link>
-            <Link className="text-foreground/80 hover:underline" href="/gov">
-              Government
-            </Link>
-          </nav>
-        </div>
-      </header>
-
-      <section className="mx-auto max-w-6xl px-4 mt-6 md:mt-10">
-        <div className="grid md:grid-cols-2 gap-6 items-center">
-          <GlassCard className="md:col-span-1">
-            <h1 className="text-balance text-2xl md:text-4xl font-semibold text-slate-900 dark:text-white">
-              Transparent, automated subsidies for Green Hydrogen
+    <DashboardShell>
+      <div className="space-y-8">
+        <section className="rounded-xl border bg-secondary p-6 md:p-8">
+          <div className="flex flex-col gap-4">
+            <h1 className="text-pretty text-3xl font-semibold leading-tight text-foreground md:text-4xl">
+              Advancing Green Hydrogen with Transparency and Trust
             </h1>
-            <p className="mt-3 text-slate-700 dark:text-slate-300 leading-relaxed">
-              Smart-contract powered milestone verification, automatic disbursements, and full audit trails across
-              Government, Startups, and Auditors.
+            <p className="max-w-2xl text-pretty text-muted-foreground leading-relaxed">
+              Explore funding allocations, program impact, and active schemes. Our mission is to enable clean energy
+              innovation while ensuring accountability to the public.
             </p>
-            <div className="mt-5 flex gap-3">
-              <Link href="/startup" className="rounded-xl bg-primary text-primary-foreground px-4 py-2">
-                Enter as Startup
-              </Link>
-              <Link href="/auditor" className="rounded-xl border border-border px-4 py-2 text-foreground">
-                Auditor
-              </Link>
-              <Link href="/gov" className="rounded-xl border border-border px-4 py-2 text-foreground">
-                Government
-              </Link>
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <Button className="bg-accent text-accent-foreground hover:opacity-90" asChild>
+                <a href="#features">Learn More</a>
+              </Button>
+              <Button variant="outline" asChild>
+                <a href="/startup/apply">Apply Now</a>
+              </Button>
             </div>
-            <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">Demo mode with sample data</p>
-          </GlassCard>
-
-          <div className="space-y-4">
-            <Metrics items={metrics} />
-            <GlassCard>
-              <h3 className="font-medium text-slate-900 dark:text-white">Recent Payments</h3>
-              <ul className="mt-2 divide-y divide-white/20">
-                {payments.slice(0, 5).map((p: any) => (
-                  <li key={p.paymentRef} className="py-2 flex items-center justify-between text-sm">
-                    <span className="text-slate-700 dark:text-slate-200">{p.paymentRef}</span>
-                    <span className="text-slate-500 dark:text-slate-400">₹{p.amount.toLocaleString()}</span>
-                  </li>
-                ))}
-              </ul>
-            </GlassCard>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section className="mx-auto max-w-6xl px-4 mt-8 md:mt-12">
-        <h2 className="text-lg md:text-2xl font-semibold text-slate-900 dark:text-white">Open Schemes</h2>
-        <div className="mt-3 grid gap-4 md:grid-cols-3">
-          {schemes
-            .filter((s: any) => s.status === "OPEN")
-            .map((s: any) => (
-              <GlassCard key={s._id}>
-                <h3 className="font-medium text-slate-900 dark:text-white">{s.title}</h3>
-                <p className="text-sm mt-1 text-slate-700 dark:text-slate-300">{s.description}</p>
-                <div className="mt-3 text-xs text-slate-600 dark:text-slate-300">
-                  Total: ₹{(s.fundAllocation?.totalAmount || 0).toLocaleString()}
-                </div>
-                <div className="mt-1 text-xs text-slate-600 dark:text-slate-300">
-                  Disbursed: ₹{(s.fundAllocation?.disbursedAmount || 0).toLocaleString()}
-                </div>
-                <Link
-                  href="/startup"
-                  className="mt-3 inline-block rounded-xl bg-primary text-primary-foreground px-3 py-1.5 text-sm"
-                >
-                  Apply
-                </Link>
-              </GlassCard>
-            ))}
+        <section id="features" className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <Card>
+            <CardHeader className="flex items-center gap-3">
+              <Leaf className="h-5 w-5 text-accent" aria-hidden />
+              <CardTitle>Clean Impact</CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm text-muted-foreground">
+              Funding targeted at decarbonization, catalyzing sustainable industry growth.
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex items-center gap-3">
+              <ShieldCheck className="h-5 w-5 text-accent" aria-hidden />
+              <CardTitle>Accountability</CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm text-muted-foreground">
+              Transparent public reporting on allocation, disbursal, and program outcomes.
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex items-center gap-3">
+              <BarChart3 className="h-5 w-5 text-accent" aria-hidden />
+              <CardTitle>Open Data</CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm text-muted-foreground">
+              Visual dashboards and datasets to track utilization and progress.
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex items-center gap-3">
+              <Globe className="h-5 w-5 text-accent" aria-hidden />
+              <CardTitle>Nationwide Reach</CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm text-muted-foreground">
+              Supporting startups and initiatives across regions for maximum impact.
+            </CardContent>
+          </Card>
+        </section>
+
+        {/* Summary cards */}
+        <h2 className="text-pretty text-xl font-semibold">Transparency Portal</h2>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <Card>
+            <CardHeader>
+              <CardTitle>Total Allocated</CardTitle>
+            </CardHeader>
+            <CardContent className="text-2xl font-bold text-primary">
+              ₹{(totalAllocated / 1_00_000).toFixed(2)}L
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Total Disbursed</CardTitle>
+            </CardHeader>
+            <CardContent className="text-2xl font-bold text-accent">₹{(totalUsed / 1_00_000).toFixed(2)}L</CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Startups Funded</CardTitle>
+            </CardHeader>
+            <CardContent className="text-2xl font-bold text-primary">{transactions.length}</CardContent>
+          </Card>
         </div>
-      </section>
-    </main>
+
+        {/* Charts section */}
+        <div className="grid gap-6 md:grid-cols-3">
+          <Card className="md:col-span-2">
+            <CardHeader>
+              <CardTitle>Fund Allocation vs Used</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <FundUtilizationBar data={schemes.map((s) => ({ name: s.name, allocated: s.allocated, used: s.used }))} />
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Overall Utilization</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <UtilizationPie used={totalUsed} remaining={totalAllocated - totalUsed} />
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Active schemes table */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Active Schemes</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-secondary text-left">
+                  <tr>
+                    <th className="p-2">ID</th>
+                    <th className="p-2">Name</th>
+                    <th className="p-2">Allocated</th>
+                    <th className="p-2">Used</th>
+                    <th className="p-2">Milestones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {schemes
+                    .filter((s) => s.status === "active")
+                    .map((s) => (
+                      <tr key={s.id} className="border-t">
+                        <td className="p-2">{s.id}</td>
+                        <td className="p-2">{s.name}</td>
+                        <td className="p-2">₹{(s.allocated / 1_00_000).toFixed(2)}L</td>
+                        <td className="p-2">₹{(s.used / 1_00_000).toFixed(2)}L</td>
+                        <td className="p-2">{s.milestones}</td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Geographic distribution placeholder */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Geographic Distribution (placeholder)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <img
+              src="/geographic-distribution-map-placeholder.png"
+              alt="Geographic distribution map placeholder"
+              className="h-64 w-full rounded border object-cover"
+            />
+          </CardContent>
+        </Card>
+
+        {/* CTA banner */}
+        <section className="rounded-xl bg-primary p-6 text-primary-foreground md:p-8">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h3 className="text-pretty text-2xl font-semibold">Partner with the Green Hydrogen Program</h3>
+              <p className="max-w-2xl text-pretty text-primary-foreground/90">
+                Join us in accelerating clean energy innovation. Explore opportunities for startups, research, and
+                public-private collaboration.
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <Button variant="secondary" asChild>
+                <a href="/gov/reports">View Reports</a>
+              </Button>
+              <Button className="bg-accent text-accent-foreground hover:opacity-90" asChild>
+                <a href="/startup/apply">Apply Now</a>
+              </Button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </DashboardShell>
   )
 }
